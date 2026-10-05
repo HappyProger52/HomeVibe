@@ -1,0 +1,9 @@
+data/
+node_modules/
+.env
+*.log
+target/
+.maven-repository/
+.maven-user-home/
+.idea/
+*.iml
