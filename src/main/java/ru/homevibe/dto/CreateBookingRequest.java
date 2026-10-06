@@ -8,7 +8,7 @@ public record CreateBookingRequest(
         @NotBlank String homeId,
         @NotNull LocalDate start,
         @NotNull LocalDate end,
-        @Min(1) @Max(8) int guests,
+        @Min(1) @Max(30) int guests,
         @NotBlank @Size(min = 2, max = 80) String name,
         @NotBlank @Size(max = 30) @Pattern(regexp = "\\+?[0-9 ()-]+") String phone,
         @NotNull @Size(max = 600) String note,

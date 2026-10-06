@@ -26,7 +26,7 @@ class ReviewsTest {
     static final Path DATA;
     static { try { DATA=Files.createTempDirectory("homevibe-reviews-"); } catch(Exception e){throw new ExceptionInInitializerError(e);} }
     @DynamicPropertySource static void properties(DynamicPropertyRegistry r) {
-        for(String name:List.of("bookings","customers","houses","reviews"))r.add("homevibe."+name+"-file",()->DATA.resolve(name+".json").toString());
+        for(String name:List.of("bookings","customers","houses","reviews","slides"))r.add("homevibe."+name+"-file",()->DATA.resolve(name+".json").toString());
         r.add("homevibe.uploads-directory",()->DATA.resolve("uploads").toString());
     }
     @Autowired MockMvc mvc;

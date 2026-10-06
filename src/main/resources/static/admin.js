@@ -1,9 +1,10 @@
 'use strict';
 const $=s=>document.querySelector(s);
-let homes=[],bookings=[],selectedId,closed=[],photoBusy=false,loadVersion=0;
+let homes=[],bookings=[],selectedId,closed=[],photoBusy=false,houseSaving=false,loadVersion=0;
 const editor=$('#house-editor');
 function message(text,error=false){$('#admin-message').textContent=text;$('#admin-message').classList.toggle('form-error',error);}
 function panel(houses) {
+  $('#slides-panel').hidden=true;$('#slides-tab').classList.remove('active');$('#slides-tab').setAttribute('aria-pressed','false');
   $('#reviews-panel').hidden=true;$('#reviews-tab').classList.remove('active');$('#reviews-tab').setAttribute('aria-pressed','false');
   $('#houses-panel').hidden=!houses;$('#reservations-panel').hidden=houses;
   $('#houses-tab').classList.toggle('active',houses);$('#bookings-tab').classList.toggle('active',!houses);
@@ -24,13 +25,23 @@ function renderRanges() {
   $('#closed-ranges').innerHTML=closed.length?closed.map((range,i)=>`<div class="closed-range"><span>${HV.date(range.start)} — ${HV.date(range.end)}</span><button type="button" class="book-button" data-remove="${i}">Убрать</button></div>`).join(''):'<p class="muted">Закрытых периодов нет.</p>';
 }
 function selectHouse(id) {
-  if(photoBusy)return;
+  if(photoBusy||houseSaving)return;
   const house=homes.find(h=>h.id===id);if(!house)return;
   selectedId=id;loadVersion++;editor.reset();$('#editor-error').textContent='';
+  $('#house-editor-title').textContent='Карточка дома';$('#save-house').textContent='Сохранить карточку и даты';
   for(const key of ['name','category','guests','bedrooms','size','price','tag','location','description','imageUrl','availableFrom','availableUntil','checkIn','checkOut']) editor.elements.namedItem(key).value=house[key]??'';
   closed=house.blockedDates.map(r=>({...r}));$('#editor-preview').src=house.imageUrl;renderRanges();
   document.querySelectorAll('[data-house]').forEach(button=>{button.classList.toggle('active',button.dataset.house===id);button.setAttribute('aria-pressed',String(button.dataset.house===id));});
 }
+$('#new-house').onclick=()=>{
+  if(photoBusy||houseSaving)return;
+  selectedId=null;loadVersion++;editor.reset();closed=[];renderRanges();
+  for(const [key,value] of Object.entries({category:'family',guests:4,bedrooms:2,size:60,price:8500,imageUrl:'/cabin.svg',checkIn:'15:00',checkOut:'12:00'}))editor.elements.namedItem(key).value=value;
+  $('#editor-preview').src='/cabin.svg';$('#editor-error').textContent='';
+  $('#house-editor-title').textContent='Новый дом';$('#save-house').textContent='Создать карточку дома';
+  document.querySelectorAll('[data-house]').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});
+  editor.elements.namedItem('name').focus();
+};
 function renderHouseSelector() {
   $('#house-selector').innerHTML=homes.map(h=>`<button class="house-choice" data-house="${HV.escape(h.id)}"><img src="${HV.escape(h.imageUrl)}" alt=""><span>${HV.escape(h.name)}<small>${HV.money(h.price)} / ночь</small></span></button>`).join('');
 }
@@ -51,14 +62,15 @@ $('#house-photo').onchange=async()=>{
   finally{photoBusy=false;$('#save-house').disabled=false;}
 };
 editor.onsubmit=async e=>{
-  e.preventDefault();if(photoBusy)return;const payload=Object.fromEntries(new FormData(editor));
+  e.preventDefault();if(photoBusy||houseSaving)return;const payload=Object.fromEntries(new FormData(editor));
   for(const key of ['guests','bedrooms','size','price'])payload[key]=Number(payload[key]);
   for(const key of ['availableFrom','availableUntil'])payload[key]=payload[key]||null;
   payload.blockedDates=closed;$('#save-house').disabled=true;$('#editor-error').textContent='';
   const id=selectedId;
-  try {const updated=await HV.api('/api/admin/houses/'+id,'PUT',payload);homes=homes.map(h=>h.id===id?updated:h);renderHouseSelector();selectHouse(id);renderBookings();message('Карточка и доступность сохранены. Изменения уже видны на сайте.');}
+  houseSaving=true;editor.querySelectorAll('input,select,textarea,button').forEach(e=>e.disabled=true);
+  try {const updated=await HV.api(id?'/api/admin/houses/'+id:'/api/admin/houses',id?'PUT':'POST',payload);homes=id?homes.map(h=>h.id===id?updated:h):[...homes,updated];houseSaving=false;renderHouseSelector();selectHouse(updated.id);renderBookings();message(id?'Карточка и доступность сохранены. Изменения уже видны на сайте.':'Новый дом создан и появился в каталоге.');}
   catch(error){$('#editor-error').textContent=error.message;}
-  finally{$('#save-house').disabled=false;}
+  finally{houseSaving=false;editor.querySelectorAll('input,select,textarea,button').forEach(e=>e.disabled=false);}
 };
 $('#bookings-list').onclick=async e=>{
   const button=e.target.closest('[data-action]');if(!button)return;button.disabled=true;
@@ -91,6 +103,7 @@ async function refreshReviews(render=true) {
   } catch(error){message(error.message,true);}
 }
 $('#reviews-tab').onclick=()=>{
+  $('#slides-panel').hidden=true;$('#slides-tab').classList.remove('active');$('#slides-tab').setAttribute('aria-pressed','false');
   $('#reviews-panel').hidden=false;$('#houses-panel').hidden=true;$('#reservations-panel').hidden=true;
   for(const id of ['reviews-tab','houses-tab','bookings-tab']) {$('#'+id).classList.toggle('active',id==='reviews-tab');$('#'+id).setAttribute('aria-pressed',String(id==='reviews-tab'));}
   refreshReviews();

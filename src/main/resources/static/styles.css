@@ -92,3 +92,41 @@ footer { flex-wrap: wrap; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* Главный слайдер и редактор слайдов. */
+.hero { position: relative; }
+.hero-content { min-width: 0; }
+#slide-title,#slide-description,#slide-caption { overflow-wrap: anywhere; }
+#slide-title { font-size: clamp(34px,4vw,60px); }
+#slide-description { min-height: 78px; }
+#slide-art { background: #81927d; }
+.slide-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#slide-art .art-label,#slide-art .art-caption { z-index: 1; }
+#slide-art .art-caption { gap: 14px; min-height: 110px; }
+#slide-caption { flex: 1; min-width: 0; font-size: 15px; }
+#slide-counter { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.slide-controls { display: flex; gap: 8px; flex-shrink: 0; }
+.slide-controls button { width: 44px; height: 44px; border: 1px solid #ffffff88; border-radius: 50%; background: #203b2cbf; color: white; font-size: 22px; }
+.slide-controls button:hover { background: #284f3c; }
+.slide-dots { position: absolute; bottom: 39px; left: 50%; display: flex; justify-content: center; transform: translateX(-50%); }
+.slide-dots button { width: 30px; height: 30px; padding: 8px; background: none; border: 0; }
+.slide-dots span { display: block; width: 8px; height: 8px; border-radius: 50%; background: #c3cbbd; margin: auto; }
+.slide-dots [aria-pressed=true] span { background: var(--green); width: 14px; border-radius: 6px; }
+#new-house { margin-bottom: 20px; }
+.slide-editor-card { border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin: 24px 0; background: white; }
+.slide-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.slide-editor-heading .review-actions { margin: 0; }
+.slide-editor-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.3fr); gap: 24px; margin-top: 18px; }
+.slide-editor-preview { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; }
+.slide-editor-card label { margin: 12px 0; }
+.slide-editor-card .muted { font-size: 11px; }
+@media(max-width:720px) {
+  #slide-title { font-size: 40px; }
+  #slide-description { min-height: 0; }
+  .slide-dots { bottom: 27px; }
+  .hero { padding-bottom: 75px; }
+  #slide-art .art-caption { padding: 18px; }
+  .slide-editor-grid { grid-template-columns: 1fr; }
+  .slide-editor-card { padding: 18px; }
+  #admin-workspace > .filters { flex-wrap: wrap; }
+}

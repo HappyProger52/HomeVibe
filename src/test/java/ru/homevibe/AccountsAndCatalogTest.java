@@ -34,6 +34,7 @@ class AccountsAndCatalogTest {
     static { try { DATA=Files.createTempDirectory("homevibe-accounts-"); } catch(Exception e){throw new ExceptionInInitializerError(e);} }
     @DynamicPropertySource static void properties(DynamicPropertyRegistry registry) {
         registry.add("homevibe.bookings-file",()->DATA.resolve("bookings.json").toString());
+        registry.add("homevibe.slides-file",()->DATA.resolve("slides.json").toString());
         registry.add("homevibe.reviews-file",()->DATA.resolve("reviews.json").toString());
         registry.add("homevibe.customers-file",()->DATA.resolve("customers.json").toString());
         registry.add("homevibe.houses-file",()->DATA.resolve("houses.json").toString());
